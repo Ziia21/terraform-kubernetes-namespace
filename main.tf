@@ -1,35 +1,36 @@
-variable "name" {
-  description = "Please provide a name"
-  type        = string
-  default     = ""
+resource "kubernetes_namespace" "example" {
+  metadata {
+    name        = var.name
+    annotations = var.annotations
+    labels      = var.labels
+  }
 }
 
-variable "annotations" {
-  description = "Please provide annotations"
-  type        = map(any)
-  default     = {}
+resource "kubernetes_resource_quota" "example" {
+  metadata {
+    name      = "pod-quota"
+    namespace = kubernetes_namespace.example.metadata[0].name
+  }
+  spec {
+    hard = {
+      pods = var.pod_quota
+    }
+    scopes = ["BestEffort"]
+  }
 }
 
-variable "labels" {
-  description = "Please provide labels"
-  type        = map(any)
-  default     = {}
-}
-
-variable "pod_quota" {
-  description = "Please specify pod quota"
-  type        = string
-  default     = ""
-}
-
-variable "pod_cpu_limit" {
-  description = "Please specify cpu limit"
-  type        = string
-  default     = ""
-}
-
-variable "pod_memory_limit" {
-  description = "Please specify memory limit"
-  type        = string
-  default     = ""
+resource "kubernetes_limit_range" "example" {
+  metadata {
+    name      = "pod-limit-range"
+    namespace = kubernetes_namespace.example.metadata[0].name
+  }
+  spec {
+    limit {
+      type = "Pod"
+      max = {
+        cpu    = var.pod_cpu_limit
+        memory = var.pod_memory_limit
+      }
+    }
+  }
 }
